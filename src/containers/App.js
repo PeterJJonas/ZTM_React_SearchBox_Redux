@@ -7,42 +7,36 @@ import StayPut from '../components/StayPut';
 import ErrorBoundry from '../components/ErrorBoundry';
 import './App.css';
 
-import { setSearchField } from "../actions"
+import { setSearchField, requestMonsters } from "../actions"
 
 const mapStateToProps = (state) => {
   return {
-    searchField: state.searchField
+    searchField: state.searchMonsters.searchField,
+    monsters: state.requestMonsters.monsters,
+    isPending: state.requestMonsters.isPending,
+    error: state.requestMonsters.error
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestMonsters: () => dispatch(requestMonsters())
   }
 }
 
 class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      monsters: []
-    }
-  }
-
-componentDidMount() {
-  fetch('https://jsonplaceholder.typicode.com/users')
-  .then(response => response.json())
-  .then(users => {this.setState({ monsters: users})});
+  componentDidMount() {
+    this.props.onRequestMonsters();
 }
 
 render() {
-  const { monsters } = this.state;
-  const { searchField, onSearchChange } = this.props;
+  const { searchField, onSearchChange, monsters, isPending } = this.props;
   const filteredMonsters = monsters.filter(monster => {
     const searchIn = (monster.name.toLowerCase() + monster.username.toLowerCase());
     return searchIn.toLowerCase().includes(searchField.toLowerCase());
   })
-  return !monsters.length ?
+  return isPending ?
     <h1 className='tc f1'>Loading</h1> :
     (
       <div className='tc'>
